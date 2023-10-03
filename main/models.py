@@ -33,3 +33,29 @@ class Lesson(models.Model):
         verbose_name = 'урок'
         verbose_name_plural = 'уроки'
 
+
+class Payment(models.Model):
+    """Модель платежей"""
+
+    #  варианты способа оплаты
+    METHOD_CHOICES = (
+        ('CASH', 'Наличные'),
+        ('TRANSFER', 'Перевод на счет'),
+    )
+
+    date = models.DateTimeField(verbose_name='Дата оплаты')
+    course = models.ForeignKey(Course, on_delete=models.SET_NULL, **NULLABLE, verbose_name='Оплаченный курс')
+    lesson = models.ForeignKey(Lesson, on_delete=models.SET_NULL, **NULLABLE, verbose_name='Оплаченный урок')
+    amount = models.PositiveIntegerField(verbose_name='Сумма оплаты')
+    method = models.CharField(max_length=25, choices=METHOD_CHOICES, verbose_name='Способ оплаты')
+
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, verbose_name='Владелец платежа',
+                              **NULLABLE)
+
+    def __str__(self):
+        return f'Платеж от {self.user} на сумму {self.amount}'
+
+    class Meta:
+        verbose_name = 'платеж'
+        verbose_name_plural = 'платежи'
+
