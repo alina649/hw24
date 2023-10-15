@@ -5,9 +5,10 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticated
 
-from main.models import Course, Lesson, Payment
+from main.models import Course, Lesson, Payment, Subscription
+from main.paginators import EducationPaginator
 from main.permissions import IsModeratorOrReadOnly, IsCourseOwner, IsCourseOrLessonOwner
-from main.serializers import CourseSerializer, LessonSerializer, PaymentSerializer
+from main.serializers import CourseSerializer, LessonSerializer, PaymentSerializer, SubscriptionSerializer
 from users.models import UserRoles
 
 
@@ -15,6 +16,7 @@ class CourseViewSet(viewsets.ModelViewSet):
     """ViewSet для модели обучающего курса"""
     serializer_class = CourseSerializer
     queryset = Course.objects.all()
+    pagination_class = EducationPaginator
 
     permission_classes = [IsAuthenticated, IsModeratorOrReadOnly | IsCourseOwner]
 
@@ -64,6 +66,7 @@ class LessonListAPIView(generics.ListAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
     permission_classes = [IsAuthenticated, IsModeratorOrReadOnly | IsCourseOrLessonOwner]
+    pagination_class = EducationPaginator
 
     def get_queryset(self):
         """ Переопределяем queryset чтобы доступ к обьекту имели только его владельцы и модератор """
@@ -91,6 +94,7 @@ class LessonRetrieveAPIView(generics.RetrieveAPIView):
 
 class LessonUpdateAPIView(generics.UpdateAPIView):
     """Generic-класс для обновления объекта Lesson"""
+
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
     permission_classes = [IsAuthenticated, IsModeratorOrReadOnly | IsCourseOrLessonOwner]
@@ -140,5 +144,19 @@ class PaymentListAPIView(generics.ListAPIView):
     filterset_fields = ('course', 'lesson', 'owner', 'method',)
     # Определяем фильтрацию по дате
     ordering_fields = ('payment_date',)
+
+
+class SubscriptionViewSet(viewsets.ModelViewSet):
+    """ ViewSet - набор основных CRUD действий над подписками на курсы """
+
+    serializer_class = SubscriptionSerializer
+    queryset = Subscription.objects.all()
+    lookup_field = 'id'
+
+    def perform_create(self, serializer):
+        """ Переопределение метода создания подписки, чтобы сохранять текущий статус подписки True или False """
+
+        new_subscription = serializer.save(user=self.request.user)  # Сохраняем связь пользователя
+        new_subscription.save()
 
 

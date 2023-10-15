@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 
-from main.models import Course, Lesson, Payment
+from main.models import Course, Lesson, Payment, Subscription
+from main.validators import LinkValidator
 from users.models import User
 
 
@@ -13,6 +14,7 @@ class LessonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
         fields = '__all__'
+        validators = [LinkValidator(field='video_url')]
 
 
 class LessonListSerializer(serializers.ModelSerializer):
@@ -47,4 +49,12 @@ class PaymentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Payment
+        fields = '__all__'
+
+
+class SubscriptionSerializer(serializers.ModelSerializer):
+    """ Сериализотор для модели подписки пользователя на курс """
+
+    class Meta:
+        model = Subscription
         fields = '__all__'
