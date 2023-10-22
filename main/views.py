@@ -7,8 +7,9 @@ from rest_framework.permissions import IsAuthenticated
 
 from main.models import Course, Lesson, Payment, Subscription
 from main.paginators import EducationPaginator
-from main.permissions import IsModeratorOrReadOnly, IsCourseOwner, IsCourseOrLessonOwner
-from main.serializers import CourseSerializer, LessonSerializer, PaymentSerializer, SubscriptionSerializer
+from main.permissions import IsModeratorOrReadOnly, IsCourseOwner, IsCourseOrLessonOwner, IsPaymentOwner
+from main.serializers import CourseSerializer, LessonSerializer, PaymentSerializer, SubscriptionSerializer, \
+    PaymentCreateSerializer
 from users.models import UserRoles
 
 
@@ -130,8 +131,20 @@ class LessonDestroyAPIView(generics.DestroyAPIView):
 
 
 class PaymentCreateAPIView(generics.CreateAPIView):
-    """Generic-класс для создания объекта модели Payment"""
-    serializer_class = PaymentSerializer
+    """ Generic - класс для создания нового платежа """
+
+    serializer_class = PaymentCreateSerializer
+    permission_classes = [IsAuthenticated, IsModeratorOrReadOnly | IsPaymentOwner]
+
+    def perform_create(self, serializer):
+        """ Переопределяем метод создания обьекта с условием, чтобы модераторы не могли создавать обьект """
+
+        if self.request.user.role == UserRoles.MODERATOR:
+            raise PermissionDenied("Вы не можете создавать новые платежи!")
+        else:
+            new_payment = serializer.save()
+            new_payment.owner = self.request.user
+            new_payment.save()
 
 
 class PaymentListAPIView(generics.ListAPIView):
@@ -158,5 +171,20 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
 
         new_subscription = serializer.save(user=self.request.user)  # Сохраняем связь пользователя
         new_subscription.save()
+
+
+class PaymentsRetrieveAPIView(generics.RetrieveAPIView):
+    """ Generic - класс для просмотра платежа """
+
+    serializer_class = PaymentSerializer
+    permission_classes = [IsAuthenticated, IsModeratorOrReadOnly | IsPaymentOwner]
+
+    def get_queryset(self):
+        """ Переопределяем queryset чтобы доступ к обьекту имели только его владельцы и модератор """
+
+        if self.request.user.role == UserRoles.MODERATOR:
+            return Payment.objects.all()
+        else:
+            return Payment.objects.filter(owner=self.request.user)
 
 

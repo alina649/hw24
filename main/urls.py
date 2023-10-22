@@ -3,7 +3,8 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
 from main.views import CourseViewSet, LessonCreateAPIView, LessonListAPIView, LessonRetrieveAPIView, \
-    LessonUpdateAPIView, LessonDestroyAPIView, PaymentCreateAPIView, PaymentListAPIView, SubscriptionViewSet
+    LessonUpdateAPIView, LessonDestroyAPIView, PaymentCreateAPIView, PaymentListAPIView, SubscriptionViewSet, \
+    PaymentsRetrieveAPIView
 
 app_name = MainConfig.name
 
@@ -20,5 +21,6 @@ urlpatterns = [
 
                   # Payment
                   path('payment/create/', PaymentCreateAPIView.as_view(), name='payment_create'),
-                  path('payment/list/', PaymentListAPIView.as_view(), name='payment_create')
+                  path('payment/list/', PaymentListAPIView.as_view(), name='payment_create'),
+                  path('payment/<int:pk>/', PaymentsRetrieveAPIView.as_view(), name='payment_get'),
               ] + router.urls

@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 from users.models import NULLABLE
 
@@ -9,6 +10,8 @@ class Course(models.Model):
     course_name = models.CharField(max_length=250, verbose_name='Наименование')
     course_preview = models.ImageField(upload_to='main/course/', verbose_name='Превью', **NULLABLE)
     course_description = models.TextField(verbose_name='Описание')
+
+    amount = models.PositiveIntegerField(default=0, verbose_name='цена')
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='владелец курса',
                               **NULLABLE)
@@ -28,6 +31,8 @@ class Lesson(models.Model):
     lesson_description = models.TextField(verbose_name='Описание')
     lesson_preview = models.ImageField(upload_to='main/lesson/', verbose_name='Превью', **NULLABLE)
     video_url = models.URLField(verbose_name='Ссылка на видео', **NULLABLE)
+
+    amount = models.PositiveIntegerField(default=0, verbose_name='цена')
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='владелец урока',
                               **NULLABLE)
@@ -49,10 +54,10 @@ class Payment(models.Model):
         ('TRANSFER', 'Перевод на счет'),
     )
 
-    date = models.DateTimeField(verbose_name='Дата оплаты')
+    date = models.DateTimeField(default=timezone.now, verbose_name='Дата оплаты')
     course = models.ForeignKey(Course, on_delete=models.SET_NULL, **NULLABLE, verbose_name='Оплаченный курс')
     lesson = models.ForeignKey(Lesson, on_delete=models.SET_NULL, **NULLABLE, verbose_name='Оплаченный урок')
-    amount = models.PositiveIntegerField(verbose_name='Сумма оплаты')
+    amount = models.PositiveIntegerField(verbose_name='Сумма оплаты', **NULLABLE)
     method = models.CharField(max_length=25, choices=METHOD_CHOICES, verbose_name='Способ оплаты')
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, verbose_name='Владелец платежа',

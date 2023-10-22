@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'users',
     'main',
     'django_filters',
+    'drf_yasg',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -137,3 +139,28 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
     ]
 }
+
+CORS_ALLOWED_ORIGINS = [
+    "https://read-only.example.com",
+    "https://read-and-write.example.com",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://read-and-write.example.com",
+]
+
+# Stripe API-settings
+STRIPE_PK = 'pk_test_51O2E5LIcN8d5rXVSVNANu2YsqNC26SOZQcZB5UQCOThK9gNPmfbZnXwxD5eEtk1BVdiEI6yYNqY0R2JvFe1vosJ9000zs7W7IR'
+STRIPE_SK = 'sk_test_51O2E5LIcN8d5rXVSVmiTyoJmjuhYHYKx5LLiNPc882HnRGQdQpkH8cT7C7I4exy7r3vqcnmKRrqulVAQp1y6GwSW00pKpo1zIc'
+
+CELERY_BROKER_URL = os.getenv('CACHE_LOCATION')
+CELERY_RESULT_BACKEND = os.getenv('CACHE_LOCATION')
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_SSL = True
+EMAIL_HOST = "smtp.yandex.ru"
+EMAIL_HOST_USER = 'yukiniora@yandex.ru'
+EMAIL_HOST_PASSWORD = 'vvtzumslzqlsyrks'
+EMAIL_PORT = 465
+
